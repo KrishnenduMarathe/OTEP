@@ -126,10 +126,10 @@ static void event_loop()
         XNextEvent(text_box.display, &e);
         if (e.type == KeyPress)
         {
-            // Escape Key to exit
+            // Escape Key to exit -- valid for my keyboard layout
             if (e.xkey.keycode == 0x09) { break; }
 
-            // Space bar to change color
+            // Space bar to change color -- valid for my keyboard layout
             if (e.xkey.keycode == 0x41)
             {
                 flag++;
