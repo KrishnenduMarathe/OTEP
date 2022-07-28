@@ -87,7 +87,20 @@ private:
             isValue = false;
 
             // Assign Config Variables
-            if (var == "FONT")
+            if (var == "EDO")
+            {
+                this->edoLocation.assign(val);
+                cnt++;
+
+            } else if (var == "DEBUG")
+            {
+                if (val == "true") { this->debug = true; }
+                else { this->debug = false; }
+
+                if (this->debug)
+                { std::cout << "CONFIG:: DEBUG Enabled" << std::endl; }
+            
+            } else if (var == "FONT")
             {
                 if (this->debug)
                 { std::cout << "CONFIG:: " << var << " := " << val << std::endl; }
@@ -184,7 +197,7 @@ private:
         }
 
         file.close();
-        if (cnt == 9) { return false; }
+        if (cnt == 10) { return false; }
         else { return true; }
     }
 
@@ -199,13 +212,15 @@ private:
     }
 
 public:
-    // TEST
-    void test()
-    { this->debug = true; }
     
-    bool exit_loop = false;
+    // Debug
     bool debug = false;
 
+    bool exit_loop = false;
+    bool edo = false;
+    
+    std::string edoLocation = "";
+    
     /* PROCESS VARIABLES */
     int width, height;
     char** buffer;
@@ -233,6 +248,29 @@ public:
     // BG & FG Pixels
     unsigned long bg, fg;
 
+    void terminate()
+    {
+        if (this->debug)
+        {
+            std::cout << "\nMSG:: Closing Application\n";
+        }
+
+        // Free Buffer Data
+        for (int h = 0; h < this->charHeight; h++)
+        {
+            delete[] this->buffer[h];
+        }
+        delete[] this->buffer;
+
+        XDestroyWindow(this->display, this->main);
+        XCloseDisplay(this->display);
+
+        if (this->debug)
+        {
+            std::cout << "MSG:: Application Closed Successfully\n";
+        }
+    }
+
     // Set copy constructor to Delete
     TerminalControl(const TerminalControl&) = delete;
 
@@ -240,8 +278,18 @@ public:
 
     /* PUBLIC METHOD DECLARATIONS */
     void initiate();
+    char getKeyInChar();
 
 };
 
+/* FUNCTION PROTOTYPES */
+
+// utils.cpp
+void display_resize();
+void draw_width(int);
+void draw();
+
+// event.cpp
+void event_loop();
 
 #endif // TERMINAL_CONTROL_H_
