@@ -126,12 +126,6 @@ void TerminalControl::initiate()
 
     XSync(this->display, False);
     XClearWindow(this->display, this->main);
-
-    // Built-in Shell
-    std::fstream shellfile;
-    shellfile.open(this->edoLocation+"EDoShell");
-    if (shellfile.is_open()) { this->edo = true; }
-    shellfile.close();
     
     // Initialize Frame Buffer
     display_resize();

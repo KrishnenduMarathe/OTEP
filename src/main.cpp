@@ -5,10 +5,11 @@ TerminalControl TerminalControl::instance;
 
 int main(int argc, char** argv)
 {
-    
-    TerminalControl::getInstance().initiate();
+	TerminalControl& handle = TerminalControl::getInstance();
+	
+	handle.initiate();
     event_loop();
-    TerminalControl::getInstance().terminate();
+    handle.terminate();
 
     return 0;
 }

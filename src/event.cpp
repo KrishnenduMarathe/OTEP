@@ -6,6 +6,9 @@ void event_loop()
     Atom windowCross = XInternAtom(terminal.display, "WM_DELETE_WINDOW", True);
     XSetWMProtocols(terminal.display, terminal.main, &windowCross, 1);
 
+	int track_h = 0;
+	int track_w = 0;
+
     while (!terminal.exit_loop)
     {
         XNextEvent(terminal.display, &terminal.event);
@@ -13,7 +16,6 @@ void event_loop()
         {
             XClearWindow(terminal.display, terminal.main);
             display_resize();
-            draw();
 
         } else if(terminal.event.type == ConfigureNotify)
         {
@@ -28,7 +30,6 @@ void event_loop()
                     
                     XClearWindow(terminal.display, terminal.main);
                     display_resize();
-                    draw();
                 }
             
             }
@@ -36,23 +37,59 @@ void event_loop()
         {
             if (XLookupKeysym(&terminal.event.xkey, 0) == XK_Shift_L || XLookupKeysym(&terminal.event.xkey, 0) == XK_Shift_R)
             {
-                kb_triggers.shift = true;
+                terminal.kb_triggers.shift = true;
             } else if (XLookupKeysym(&terminal.event.xkey, 0) == XK_Control_L || XLookupKeysym(&terminal.event.xkey, 0) == XK_Control_R)
             {
-                kb_triggers.control = true;
+                terminal.kb_triggers.control = true;
             } else if (XLookupKeysym(&terminal.event.xkey, 0) == XK_Alt_L || XLookupKeysym(&terminal.event.xkey, 0) == XK_Alt_R)
             {
-                kb_triggers.alt = true;
+                terminal.kb_triggers.alt = true;
             } else if (XLookupKeysym(&terminal.event.xkey, 0) == XK_Caps_Lock)
             {
-                kb_triggers.caps = !kb_triggers.caps;
+                terminal.kb_triggers.caps = !terminal.kb_triggers.caps;
             } else
             {
-                char key = terminal.getKeyInChar();
+                char key = terminal.getKeyInChar(); // Add backspace support
                 if (terminal.debug)
                 { std::cout << "MSG:: Key Pressed >> " << key << std::endl; }
                         
                 // Process Input
+				if (key == '\n')
+				{
+					for (int w = track_w; w < terminal.charWidth; w++)
+					{
+						terminal.buffer[track_h][w] = ' ';
+					}
+					track_h++;
+					track_w = 0;
+				} else
+				{
+					terminal.buffer[track_h][track_w] = key;
+					track_w++;
+				}
+				if (track_w >= terminal.charWidth)
+				{
+					track_w = 0; 
+					track_h++;
+				}
+				if (track_h >= terminal.charHeight - 1)
+				{
+					track_h--;
+					for (int h = 1; h < terminal.charHeight; h++)
+					{
+						for (int w = 0; w < terminal.charWidth; w++)
+						{
+							terminal.buffer[h-1][w] = terminal.buffer[h][w];
+						}
+					}
+					for (int h = terminal.charHeight - 1 - 1; h < terminal.charHeight; h++)
+					{
+						for (int w = 0; w < terminal.charWidth; w++)
+						{
+							terminal.buffer[h][w] = ' ';
+						} 
+					}
+				}
             }
             // Update Screen if required & draw
 
@@ -60,13 +97,13 @@ void event_loop()
         {
             if (XLookupKeysym(&terminal.event.xkey, 0) == XK_Shift_L || XLookupKeysym(&terminal.event.xkey, 0) == XK_Shift_R)
             {
-                kb_triggers.shift = false;
+                terminal.kb_triggers.shift = false;
             } else if (XLookupKeysym(&terminal.event.xkey, 0) == XK_Control_L || XLookupKeysym(&terminal.event.xkey, 0) == XK_Control_R)
             {
-                kb_triggers.control = false;
+                terminal.kb_triggers.control = false;
             } else if (XLookupKeysym(&terminal.event.xkey, 0) == XK_Alt_L || XLookupKeysym(&terminal.event.xkey, 0) == XK_Alt_R)
             {
-                kb_triggers.alt = false;
+                terminal.kb_triggers.alt = false;
             }
             // Update Screen if required & draw
 
@@ -87,6 +124,8 @@ void event_loop()
 
         } else if (terminal.event.type == ClientMessage)
         { terminal.exit_loop = true; }
+
+		draw();
 
         std::flush(std::cout);
         XFlush(terminal.display);

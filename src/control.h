@@ -8,6 +8,10 @@
 #include <string>
 #include <thread>
 
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/types.h>
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
@@ -20,6 +24,21 @@ class TerminalControl
 private:
     static TerminalControl instance;
 
+    // Constructor declared private for the pattern to work
+    TerminalControl() {}
+
+    /* PRIVATE METHOD DECLARATIONS */
+    bool isNumber(std::string str)
+    {
+        for (unsigned int itr = 0; itr < str.length(); itr++)
+        {
+            if (std::isdigit(str[itr]) == 0) { return false; }
+        }
+
+        return true;
+    }
+
+public:
     // Determine Successful Initialization
     bool init = false;
 
@@ -34,11 +53,77 @@ private:
     bool history;
     uint8_t h_lines = 0;
 
-    // Constructor declared private for the pattern to work
-    TerminalControl() {}
+    // Debug
+    bool debug = false;
 
-    /* PRIVATE METHOD DECLARATIONS */
-    bool read_config()
+    bool exit_loop = false;
+    
+    /* PROCESS VARIABLES */
+    int width, height;
+    char** buffer;
+
+    // X11
+    Display* display;
+    int screen;
+    Window root, main;
+    GC gc;
+    XFontStruct* font;
+    Colormap cmap;
+
+    unsigned long whitepx, blackpx;
+    unsigned int resolution_x = 0, resolution_y = 0;
+
+    XColor u_color, s_color;
+    XEvent event;
+
+    // Character Dimension
+    uint8_t c_height, c_width;
+
+    // Terminal Dimension in Characters
+    int charWidth = 0, charHeight = 0;
+
+    // BG & FG Pixels
+    unsigned long bg, fg;
+
+	// Keyboard Triggers
+	struct
+	{
+		bool caps = false;
+    	bool shift = false;
+	    bool control = false;
+    	bool alt = false;
+	} kb_triggers;
+
+    void terminate()
+    {
+        if (this->debug)
+        {
+            std::cout << "\nMSG:: Closing Application\n";
+        }
+
+        // Free Buffer Data
+        for (int h = 0; h < this->charHeight; h++)
+        {
+            delete[] this->buffer[h];
+        }
+        delete[] this->buffer;
+
+        XDestroyWindow(this->display, this->main);
+        XCloseDisplay(this->display);
+
+        if (this->debug)
+        {
+            std::cout << "MSG:: Application Closed Successfully\n";
+        }
+    }
+
+    // Set copy constructor to Delete
+    TerminalControl(const TerminalControl&) = delete;
+
+    static TerminalControl& getInstance() { return instance; }
+
+    /* PUBLIC METHOD DECLARATIONS */
+	bool read_config()
     {
         int8_t cnt = 0;
 
@@ -87,12 +172,7 @@ private:
             isValue = false;
 
             // Assign Config Variables
-            if (var == "EDO")
-            {
-                this->edoLocation.assign(val);
-                cnt++;
-
-            } else if (var == "DEBUG")
+            if (var == "DEBUG")
             {
                 if (val == "true") { this->debug = true; }
                 else { this->debug = false; }
@@ -197,86 +277,12 @@ private:
         }
 
         file.close();
-        if (cnt == 10) { return false; }
+		std::cout << std::endl;
+		
+        if (cnt == 9) { return false; }
         else { return true; }
     }
 
-    bool isNumber(std::string str)
-    {
-        for (unsigned int itr = 0; itr < str.length(); itr++)
-        {
-            if (std::isdigit(str[itr]) == 0) { return false; }
-        }
-
-        return true;
-    }
-
-public:
-    
-    // Debug
-    bool debug = false;
-
-    bool exit_loop = false;
-    bool edo = false;
-    
-    std::string edoLocation = "";
-    
-    /* PROCESS VARIABLES */
-    int width, height;
-    char** buffer;
-
-    // X11
-    Display* display;
-    int screen;
-    Window root, main;
-    GC gc;
-    XFontStruct* font;
-    Colormap cmap;
-
-    unsigned long whitepx, blackpx;
-    unsigned int resolution_x = 0, resolution_y = 0;
-
-    XColor u_color, s_color;
-    XEvent event;
-
-    // Character Dimension
-    uint8_t c_height, c_width;
-
-    // Terminal Dimension in Characters
-    int charWidth = 0, charHeight = 0;
-
-    // BG & FG Pixels
-    unsigned long bg, fg;
-
-    void terminate()
-    {
-        if (this->debug)
-        {
-            std::cout << "\nMSG:: Closing Application\n";
-        }
-
-        // Free Buffer Data
-        for (int h = 0; h < this->charHeight; h++)
-        {
-            delete[] this->buffer[h];
-        }
-        delete[] this->buffer;
-
-        XDestroyWindow(this->display, this->main);
-        XCloseDisplay(this->display);
-
-        if (this->debug)
-        {
-            std::cout << "MSG:: Application Closed Successfully\n";
-        }
-    }
-
-    // Set copy constructor to Delete
-    TerminalControl(const TerminalControl&) = delete;
-
-    static TerminalControl& getInstance() { return instance; }
-
-    /* PUBLIC METHOD DECLARATIONS */
     void initiate();
     char getKeyInChar();
 
