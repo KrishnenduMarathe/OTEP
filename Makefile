@@ -9,14 +9,16 @@ PATH=$(shell pwd)
 # Project Objects
 OBJECTS=src/event.o src/init.o src/main.o src/utils.o
 
-all: build
+all: build config/icon.png config/otep.conf config/version
 
 # Build Rules
-build: config/icon.png config/otep.conf config/version $(OBJECTS)
-	$(CXX) -o $(EXEC) $(OBJECTS) $(CXXFLAGS)
+build: $(OBJECTS)
+	@echo "$(CXX) $(OBJECTS) -o $(EXEC) $(CXXFLAGS)"
+	$(shell $(CXX) $(OBJECTS) -o $(EXEC) $(CXXFLAGS))
 
 src/%.o: src/%.cpp
-	$(CXX) -o $@ -c $^
+	@echo "$(CXX) -c $^ -o $@"
+	$(shell $(CXX) -c $^ -o $@)
 
 # Install Rules
 .PHONY: install
@@ -26,10 +28,12 @@ install: build
 # Uninstall Rules
 .PHONY: uninstall
 uninstall: clean
-	@rm ~/.local/share/applications/otep.desktop
+	$(shell rm ~/.local/share/applications/otep.desktop)
+	@echo "Project Uninstalled!"
 
 # Clean Rules
 .PHONY: clean
 clean:
-	@rm src/*.o
-	@rm $(EXEC)
+	$(shell rm src/*.o)
+	$(shell rm $(EXEC))
+	@echo "Project Cleaned!"
