@@ -1,4 +1,5 @@
 #include "control.h"
+#include <X11/Xlib.h>
 
 void display_resize()
 {
@@ -76,16 +77,6 @@ void draw_width(int current_height)
     x = lx;
     y = ly + terminal.c_height;
 
-    // Draw Background
-    XSetForeground(terminal.display, terminal.gc, terminal.bg);
-    for (int h = y - terminal.c_height; h < y; h++)
-    {
-        for (int w = x; w < terminal.width; w++)
-        {
-            XDrawPoint(terminal.display, terminal.main, terminal.gc, w, h);
-        }
-    }
-
     // Draw String
     XSetForeground(terminal.display, terminal.gc, terminal.fg);
     XDrawString(terminal.display, terminal.main, terminal.gc, x, y, terminal.buffer[current_height], terminal.charWidth);
@@ -96,8 +87,10 @@ void draw()
 {
     TerminalControl& terminal = TerminalControl::getInstance();
 
+	// Draw Prompt
+
     // Single thread draw
-    for (int h = 0; h <terminal.charHeight; h++)
+    for (int h = 0; h < terminal.charHeight; (h++))
     {
         draw_width(h);
     }
