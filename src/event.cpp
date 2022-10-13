@@ -62,11 +62,24 @@ void event_loop()
 					}
 					track_h++;
 					track_w = 0;
+				} else if (key == '\b')
+				{
+					track_w--;
+					if (track_w < 0)
+					{
+						track_w = terminal.charWidth - 1;
+						track_h--;
+					}
+
+					terminal.buffer[track_h][track_w] = ' ';
 				} else
 				{
+					if (key == '\0') { key = ' '; }
+
 					terminal.buffer[track_h][track_w] = key;
 					track_w++;
 				}
+
 				if (track_w >= terminal.charWidth)
 				{
 					track_w = 0; 

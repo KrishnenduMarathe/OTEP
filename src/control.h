@@ -60,7 +60,7 @@ public:
     bool exit_loop = false;
 
 	// Draw Prompt
-	bool draw_prompt = false;
+	bool draw_prompt = true;
     
     /* PROCESS VARIABLES */
     int width, height;

@@ -92,6 +92,8 @@ inline char TerminalControl::getKeyInChar()
             return '\n';
         case XK_space:
             return ' ';
+		case XK_BackSpace:
+			return '\b';
         case XK_KP_Divide:
             return '/';
         case XK_KP_Multiply:
