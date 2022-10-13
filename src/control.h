@@ -56,7 +56,11 @@ public:
     // Debug
     bool debug = false;
 
+	// Exit Marker
     bool exit_loop = false;
+
+	// Draw Prompt
+	bool draw_prompt = false;
     
     /* PROCESS VARIABLES */
     int width, height;

@@ -87,6 +87,9 @@ void draw()
 {
     TerminalControl& terminal = TerminalControl::getInstance();
 
+    // Clear Screen
+    XClearWindow(terminal.display, terminal.main);
+
 	// Draw Prompt
 
     // Single thread draw
