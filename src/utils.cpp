@@ -90,12 +90,41 @@ void draw()
     // Clear Screen
     XClearWindow(terminal.display, terminal.main);
 
-	// Draw Prompt
-
     // Single thread draw
     for (int h = 0; h < terminal.charHeight; (h++))
     {
         draw_width(h);
     }
 
+}
+
+// Manage pointer to the current buffer addresss within constraints
+void straighten_hw(int* track_h, int* track_w)
+{
+	TerminalControl& terminal = TerminalControl::getInstance();
+
+	if (*track_w >= terminal.charWidth)
+	{
+		*track_w = 0;
+		*track_h += 1;
+	}
+
+	if (*track_h >= terminal.charHeight - 1)
+	{
+		*track_h -= 1;
+		for (int h = 1; h < terminal.charHeight; h++)
+		{
+			for (int w = 0; w < terminal.charWidth; w++)
+			{
+				terminal.buffer[h-1][w] = terminal.buffer[h][w];
+			}
+		}
+		for (int h = terminal.charHeight - 1 - 1; h < terminal.charHeight; h++)
+		{
+			for (int w = 0; w < terminal.charWidth; w++)
+			{
+				terminal.buffer[h][w] = ' ';
+			} 
+		}
+	}
 }

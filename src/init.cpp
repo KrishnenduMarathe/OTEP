@@ -16,6 +16,15 @@ void TerminalControl::initiate()
         exit(1);
     }
 
+	// Get Hostname (Linux System)
+	std::ifstream file;
+	std::string hostname;
+	file.open("/etc/hostname", std::ios::in);
+	getline(file, hostname);
+	file.close();
+
+	this->prompt.assign(":: " + hostname + " >> ");
+
     // Connect to X Server
     this->display = XOpenDisplay(NULL);
     if (!this->display)

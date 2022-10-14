@@ -9,8 +9,53 @@ void event_loop()
 	int track_h = 0;
 	int track_w = 0;
 
+	std::string msg;
+	if (terminal.debug && !terminal.advance_debug)
+	{
+		std::cout << "Input Pointer >>\n\t";
+	}
+
     while (!terminal.exit_loop)
     {
+		// Draw prompt
+		if (terminal.draw_prompt)
+		{
+			terminal.draw_prompt = false;
+
+			if (track_w != 0)
+			{
+				track_w = 0;
+				track_h++;
+			}
+
+			if (terminal.charWidth < terminal.prompt.length())
+			{
+				for (int w = 0; w < terminal.charWidth; w++)
+				{
+					terminal.buffer[track_h][w] = terminal.prompt[w];
+				}
+				track_h++;
+				track_w = 0;
+
+				for (int w = terminal.charWidth; w < terminal.prompt.length(); w++)
+				{
+					terminal.buffer[track_h][w - terminal.charWidth] = terminal.prompt[w];
+				}
+
+				track_w = terminal.prompt.length() - terminal.charWidth;
+
+			} else {
+				for (int w = 0; w < terminal.prompt.length(); w++)
+				{
+					terminal.buffer[track_h][w] = terminal.prompt[w];
+				}
+
+				track_w = terminal.prompt.length();
+			}
+
+			straighten_hw(&track_h, &track_w);
+		}
+			
         XNextEvent(terminal.display, &terminal.event);
         if (terminal.event.type == Expose)
         {
@@ -50,18 +95,15 @@ void event_loop()
             } else
             {
                 char key = terminal.getKeyInChar(); // Add backspace support
-                if (terminal.debug)
+                if (terminal.advance_debug)
                 { std::cout << "MSG:: Key Pressed >> " << key << std::endl; }
                         
                 // Process Input
 				if (key == '\n')
 				{
-					for (int w = track_w; w < terminal.charWidth; w++)
-					{
-						terminal.buffer[track_h][w] = ' ';
-					}
 					track_h++;
 					track_w = 0;
+					terminal.draw_prompt = true;
 				} else if (key == '\b')
 				{
 					track_w--;
@@ -80,31 +122,9 @@ void event_loop()
 					track_w++;
 				}
 
-				if (track_w >= terminal.charWidth)
-				{
-					track_w = 0; 
-					track_h++;
-				}
-				if (track_h >= terminal.charHeight - 1)
-				{
-					track_h--;
-					for (int h = 1; h < terminal.charHeight; h++)
-					{
-						for (int w = 0; w < terminal.charWidth; w++)
-						{
-							terminal.buffer[h-1][w] = terminal.buffer[h][w];
-						}
-					}
-					for (int h = terminal.charHeight - 1 - 1; h < terminal.charHeight; h++)
-					{
-						for (int w = 0; w < terminal.charWidth; w++)
-						{
-							terminal.buffer[h][w] = ' ';
-						} 
-					}
-				}
+				straighten_hw(&track_h, &track_w);
             }
-            // Update Screen if required & draw
+            // Update Screen if required
 
         } else if(terminal.event.type == KeyRelease)
         {
@@ -118,7 +138,7 @@ void event_loop()
             {
                 terminal.kb_triggers.alt = false;
             }
-            // Update Screen if required & draw
+            // Update Screen if required
 
         } else if (terminal.event.type == ButtonPress)
         {
@@ -126,12 +146,12 @@ void event_loop()
             if (terminal.event.xbutton.button == Button4)
             {
                 // Process Scroll
-                if (terminal.debug)
+                if (terminal.advance_debug)
                 { std::cout << "MSG:: Mouse Scroll Up\n"; }
             } else if (terminal.event.xbutton.button == Button5)
             {
                 // Process Scroll
-                if (terminal.debug)
+                if (terminal.advance_debug)
                 { std::cout << "MSG:: Mouse Scroll Down\n"; }
             }
 
@@ -142,5 +162,17 @@ void event_loop()
 
         std::flush(std::cout);
         XFlush(terminal.display);
+
+		if (terminal.debug && !terminal.advance_debug)
+		{
+			msg.assign("H: " + std::to_string(track_h) + " | W: " + std::to_string(track_w));
+			std::cout << msg;
+			for (int i = 0; i < msg.length(); i++)
+			{
+				std::cout << "\b";
+			}
+		}
     }
+
+	if (terminal.debug && !terminal.advance_debug) { std::cout << std::endl; }
 }

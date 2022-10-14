@@ -55,12 +55,16 @@ public:
 
     // Debug
     bool debug = false;
+	bool advance_debug = false;
 
 	// Exit Marker
     bool exit_loop = false;
 
 	// Draw Prompt
 	bool draw_prompt = true;
+
+	// Prompt
+	std::string prompt;
     
     /* PROCESS VARIABLES */
     int width, height;
@@ -184,7 +188,17 @@ public:
                 if (this->debug)
                 { std::cout << "CONFIG:: DEBUG Enabled" << std::endl; }
             
-            } else if (var == "FONT")
+            } else if (var == "ADVANCE")
+			{
+				if (val == "true") { this->advance_debug = true; }
+				else { this->advance_debug = false; }
+
+				if (!this->debug) { this->advance_debug = false; }
+
+				if (this->advance_debug)
+                { std::cout << "CONFIG:: ADVANCE DEBUG Enabled" << std::endl; }
+
+			} else if (var == "FONT")
             {
                 if (this->debug)
                 { std::cout << "CONFIG:: " << var << " := " << val << std::endl; }
@@ -298,6 +312,7 @@ public:
 void display_resize();
 void draw_width(int);
 void draw();
+void straighten_hw(int*, int*);
 
 // event.cpp
 void event_loop();
