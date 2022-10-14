@@ -6,10 +6,17 @@ void event_loop()
     Atom windowCross = XInternAtom(terminal.display, "WM_DELETE_WINDOW", True);
     XSetWMProtocols(terminal.display, terminal.main, &windowCross, 1);
 
+	// Input Pointer Coordinates
 	int track_h = 0;
 	int track_w = 0;
 
+	// Command Initial Coordinates
+	int comm_h = 0;
+	int comm_w = 0;
+
 	std::string msg;
+	std::string command;
+
 	if (terminal.debug && !terminal.advance_debug)
 	{
 		std::cout << "Input Pointer >>\n\t";
@@ -54,6 +61,9 @@ void event_loop()
 			}
 
 			straighten_hw(&track_h, &track_w);
+
+			comm_h = track_h;
+			comm_w = track_w;
 		}
 			
         XNextEvent(terminal.display, &terminal.event);
@@ -94,15 +104,31 @@ void event_loop()
                 terminal.kb_triggers.caps = !terminal.kb_triggers.caps;
             } else
             {
-                char key = terminal.getKeyInChar(); // Add backspace support
+                char key = terminal.getKeyInChar();
                 if (terminal.advance_debug)
                 { std::cout << "MSG:: Key Pressed >> " << key << std::endl; }
                         
                 // Process Input
 				if (key == '\n')
 				{
-					track_h++;
+					// construct command
+					 command.assign("");
+
+					for (int h = comm_h; h < track_h+1; h++)
+					{
+						for (int w = comm_w; w < track_w+1; w++)
+						{
+							command.push_back(terminal.buffer[h][w]);
+						}
+					}
+
+					track_h += 1;
 					track_w = 0;
+
+					// process command
+					if (command != "\n")
+					{ process_launch(command, &track_h, &track_w); }
+
 					terminal.draw_prompt = true;
 				} else if (key == '\b')
 				{

@@ -313,6 +313,7 @@ void display_resize();
 void draw_width(int);
 void draw();
 void straighten_hw(int*, int*);
+void process_launch(std::string, int*, int*);
 
 // event.cpp
 void event_loop();
