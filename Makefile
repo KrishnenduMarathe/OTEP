@@ -16,11 +16,6 @@ build: $(OBJECTS)
 	@echo "$(CXX) $(OBJECTS) -o $(EXEC) $(CXXFLAGS)"
 	$(shell $(CXX) $(OBJECTS) -o $(EXEC) $(CXXFLAGS))
 
-# Debug Rules
-debug: $(OBJECTS)
-	@echo "$(CXX) -g -Wall $(OBJECTS) -o $(EXEC) $(CXXFLAGS)"
-	$(shell $(CXX) -g -Wall $(OBJECTS) -o $(EXEC) $(CXXFLAGS))
-
 # Object Rules
 src/%.o: src/%.cpp
 	@echo "$(CXX) -c $^ -o $@"
