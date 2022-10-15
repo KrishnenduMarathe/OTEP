@@ -6,6 +6,11 @@ void event_loop()
     Atom windowCross = XInternAtom(terminal.display, "WM_DELETE_WINDOW", True);
     XSetWMProtocols(terminal.display, terminal.main, &windowCross, 1);
 
+	// resize control
+	bool resize = false;
+	unsigned int max_count = 10000; // threshold
+	unsigned int count = 0;
+
 	// Input Pointer Coordinates
 	int track_h = 0;
 	int track_w = 0;
@@ -24,6 +29,9 @@ void event_loop()
 
     while (!terminal.exit_loop)
     {
+		// Wait resize until threshold
+		if (resize) { count++; }
+
 		// Draw prompt
 		if (terminal.draw_prompt)
 		{
@@ -69,7 +77,6 @@ void event_loop()
         XNextEvent(terminal.display, &terminal.event);
         if (terminal.event.type == Expose)
         {
-            XClearWindow(terminal.display, terminal.main);
             display_resize();
 
         } else if(terminal.event.type == ConfigureNotify)
@@ -78,14 +85,20 @@ void event_loop()
             if (xce.width != terminal.width || xce.height != terminal.height)
             {
                 XConfigureEvent xce = terminal.event.xconfigure;
-                if (xce.width != terminal.width || xce.height != terminal.height)
-                {
-                    terminal.height = xce.height;
-                    terminal.width = xce.width;
-                    
-                    XClearWindow(terminal.display, terminal.main);
-                    display_resize();
-                }
+                
+				if (!resize) { resize = true; }
+				
+				if (resize && count >= max_count)
+				{
+					count = 0;
+					resize = false;
+					if (xce.width != terminal.width || xce.height != terminal.height)
+                	{
+                    	terminal.height = xce.height;
+                    	terminal.width = xce.width;
+						display_resize();
+                	}
+				}
             
             }
         }  else if(terminal.event.type == KeyPress)
@@ -116,7 +129,7 @@ void event_loop()
 
 					for (int h = comm_h; h < track_h+1; h++)
 					{
-						for (int w = comm_w; w < track_w+1; w++)
+						for (int w = comm_w; w < track_w; w++)
 						{
 							command.push_back(terminal.buffer[h][w]);
 						}
@@ -126,20 +139,22 @@ void event_loop()
 					track_w = 0;
 
 					// process command
-					if (command != "\n")
-					{ process_launch(command, &track_h, &track_w); }
+					process_launch(command, &track_h, &track_w);
 
-					terminal.draw_prompt = true;
+					if (!terminal.exit_loop) { terminal.draw_prompt = true; }
 				} else if (key == '\b')
 				{
-					track_w--;
-					if (track_w < 0)
+					if (track_w > comm_w)
 					{
-						track_w = terminal.charWidth - 1;
-						track_h--;
-					}
+						track_w--;
+						if (track_w < 0)
+						{
+							track_w = terminal.charWidth - 1;
+							track_h--;
+						}
 
-					terminal.buffer[track_h][track_w] = ' ';
+						terminal.buffer[track_h][track_w] = ' ';
+					}
 				} else
 				{
 					if (key == '\0') { key = ' '; }

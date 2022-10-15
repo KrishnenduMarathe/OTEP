@@ -46,6 +46,7 @@ void display_resize()
 		int h = terminal.charHeight - 1;
 		int hi = old_y - 1;
 		int w = 0;
+
 		while (h >= 0)
 		{
 			terminal.buffer[h][w%terminal.charWidth] = record[hi][w%old_x];
@@ -57,6 +58,13 @@ void display_resize()
 			w++;
 		}
 	}
+
+	// Clear record
+	for (int h = 0; h < terminal.charHeight; h++)
+	{
+		delete[] record[h];
+	}
+	delete[] record;
 }
 
 // Draw Rows of the terminal
@@ -125,49 +133,4 @@ void straighten_hw(int* track_h, int* track_w)
 			} 
 		}
 	}
-}
-
-void process_launch(std::string comm, int* track_h, int* track_w)
-{
-	TerminalControl& terminal = TerminalControl::getInstance();
-
-	std::string msg;
-	msg.assign("Command " + comm + "Not Found!");
-
-	if (*track_w != 0)
-	{
-		*track_w = 0;
-		*track_h += 1;
-	}
-
-	if (terminal.charWidth < msg.length())
-	{
-		for (int w = 0; w < terminal.charWidth; w++)
-		{
-			terminal.buffer[*track_h][w] = msg[w];
-		}
-		*track_h += 1;
-		*track_w = 0;
-
-		for (int w = terminal.charWidth; w < msg.length(); w++)
-		{
-			terminal.buffer[*track_h][w - terminal.charWidth] = msg[w];
-		}
-
-		*track_w = msg.length() - terminal.charWidth;
-
-	} else {
-		for (int w = 0; w < msg.length(); w++)
-		{
-			terminal.buffer[*track_h][w] = msg[w];
-		}
-
-		*track_w = msg.length();
-	}
-
-	*track_h += 2;
-	*track_w = 0;
-
-	straighten_hw(track_h, track_w);
-
 }
