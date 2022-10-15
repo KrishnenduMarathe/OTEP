@@ -3,23 +3,33 @@ CXX=g++
 CXXFLAGS=-lX11 -lpthread
 
 # Executable Name
-EXEC=Otep
+LBITs=$(shell getconf LONG_BIT)
+ifeq ($(LBITs), 64)
+	EXEC=Otep.x64
+else
+	EXEC=Otep.x86
+endif
 
 PATH=$(shell pwd)
 # Project Objects
-OBJECTS=src/event.o src/init.o src/main.o src/utils.o
+OBJECTS=src/command.o src/event.o src/init.o src/main.o src/utils.o
 
 all: build config/icon.png config/otep.conf config/version
 
 # Build Rules
 build: $(OBJECTS)
-	@echo "$(CXX) $(OBJECTS) -o $(EXEC) $(CXXFLAGS)"
+	@echo "\n$(CXX) $(OBJECTS) -o $(EXEC) $(CXXFLAGS)"
 	$(shell $(CXX) $(OBJECTS) -o $(EXEC) $(CXXFLAGS))
 
 # Object Rules
 src/%.o: src/%.cpp
 	@echo "$(CXX) -c $^ -o $@"
 	$(shell $(CXX) -c $^ -o $@)
+
+# Debug Build
+debug: clean
+	@echo "\n$(CXX) -g src/*.cpp -o $(EXEC) $(CXXFLAGS)"
+	$(shell $(CXX) -g src/*.cpp -o $(EXEC) $(CXXFLAGS))
 
 # Install Rules
 .PHONY: install

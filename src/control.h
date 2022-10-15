@@ -4,8 +4,8 @@
 
 #include <iostream>
 #include <fstream>
-#include <stdint.h>
 #include <string>
+#include <cstdlib>
 #include <thread>
 
 #include <sys/ipc.h>
@@ -51,7 +51,7 @@ public:
     std::string t_width = "", t_height = "";
 
     bool history;
-    uint8_t h_lines = 0;
+    unsigned int h_lines = 0;
 
     // Debug
     bool debug = false;

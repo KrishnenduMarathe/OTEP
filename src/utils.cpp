@@ -7,10 +7,7 @@ void display_resize()
 
     // Free Buffer Data
 	char **record;
-	if (terminal.charHeight != 0)
-	{
-		record = new char*[terminal.charHeight];
-	}
+	record = new char*[terminal.charHeight];
 	for (int h = 0; h < terminal.charHeight; h++)
     {
 		record[h] = new char[terminal.charWidth];
@@ -59,12 +56,12 @@ void display_resize()
 		}
 	}
 
-	// Clear record
-	for (int h = 0; h < terminal.charHeight; h++)
+	// Clear record - Segmentation Fault on "delete[] record[h];" quarantined
+	/*for (int h = 0; h < terminal.charHeight; h++)
 	{
 		delete[] record[h];
 	}
-	delete[] record;
+	delete[] record;*/
 }
 
 // Draw Rows of the terminal
