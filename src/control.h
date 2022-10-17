@@ -72,7 +72,7 @@ public:
     
     /* PROCESS VARIABLES */
     int width, height;
-    char** buffer;
+    char* buffer;
 
     // X11
     Display* display;
@@ -127,6 +127,7 @@ public:
 
 // utils.cpp
 void display_resize();
+void init_display();
 void draw_width(int);
 void draw();
 void straighten_hw(int*, int*);

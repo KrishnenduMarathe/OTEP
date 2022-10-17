@@ -6,11 +6,6 @@ void event_loop()
     Atom windowCross = XInternAtom(terminal.display, "WM_DELETE_WINDOW", True);
     XSetWMProtocols(terminal.display, terminal.main, &windowCross, 1);
 
-	// resize control
-	bool resize = false;
-	unsigned int max_count = 50; // threshold
-	unsigned int count = 0;
-
 	// Input Pointer Coordinates
 	int track_h = 0;
 	int track_w = 0;
@@ -29,9 +24,6 @@ void event_loop()
 
     while (!terminal.exit_loop)
     {
-		// Wait resize until threshold
-		if (resize) { count++; }
-
 		// Draw prompt
 		if (terminal.draw_prompt)
 		{
@@ -43,18 +35,13 @@ void event_loop()
 				track_h++;
 			}
 
-			if (terminal.charWidth < terminal.prompt.length())
+			if (terminal.charWidth <= terminal.prompt.length())
 			{
-				for (int w = 0; w < terminal.charWidth; w++)
+				for (int w = 0; w < terminal.prompt.length(); w++)
 				{
-					terminal.buffer[track_h][w] = terminal.prompt[w];
-				}
-				track_h++;
-				track_w = 0;
+					if (w == terminal.charWidth) { track_h++; }
 
-				for (int w = terminal.charWidth; w < terminal.prompt.length(); w++)
-				{
-					terminal.buffer[track_h][w - terminal.charWidth] = terminal.prompt[w];
+					terminal.buffer[(track_h*terminal.charWidth)+(w%terminal.charWidth)] = terminal.prompt[w];
 				}
 
 				track_w = terminal.prompt.length() - terminal.charWidth;
@@ -62,7 +49,7 @@ void event_loop()
 			} else {
 				for (int w = 0; w < terminal.prompt.length(); w++)
 				{
-					terminal.buffer[track_h][w] = terminal.prompt[w];
+					terminal.buffer[(track_h*terminal.charWidth)+w] = terminal.prompt[w];
 				}
 
 				track_w = terminal.prompt.length();
@@ -85,21 +72,13 @@ void event_loop()
             if (xce.width != terminal.width || xce.height != terminal.height)
             {
                 XConfigureEvent xce = terminal.event.xconfigure;
-                
-				if (!resize) { resize = true; }
-				
-				if (resize && count >= max_count)
-				{
-					count = 0;
-					resize = false;
-					if (xce.width != terminal.width || xce.height != terminal.height)
-                	{
-                    	terminal.height = xce.height;
-                    	terminal.width = xce.width;
-						display_resize();
-                	}
-				}
-            
+                		
+				if (xce.width != terminal.width || xce.height != terminal.height)
+                {
+                    terminal.height = xce.height;
+                    terminal.width = xce.width;
+					display_resize();
+                }
             }
         }  else if(terminal.event.type == KeyPress)
         {
@@ -131,7 +110,7 @@ void event_loop()
 					{
 						for (int w = comm_w; w < track_w; w++)
 						{
-							command.push_back(terminal.buffer[h][w]);
+							command.push_back(terminal.buffer[(h*terminal.charWidth)+w]);
 						}
 					}
 
@@ -153,13 +132,13 @@ void event_loop()
 							track_h--;
 						}
 
-						terminal.buffer[track_h][track_w] = ' ';
+						terminal.buffer[(track_h*terminal.charWidth)+track_w] = ' ';
 					}
 				} else
 				{
 					if (key == '\0') { key = ' '; }
 
-					terminal.buffer[track_h][track_w] = key;
+					terminal.buffer[(track_h*terminal.charWidth)+track_w] = key;
 					track_w++;
 				}
 

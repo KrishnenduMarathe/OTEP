@@ -41,26 +41,26 @@ void process_launch(std::string comm, int* track_h, int* track_w)
 		*track_h += 1;
 	}
 
-	if (terminal.charWidth < msg.length())
+	if (terminal.charWidth <= msg.length())
 	{
-		for (int w = 0; w < terminal.charWidth; w++)
+		for (int w = 0; w < msg.length(); w++)
 		{
-			terminal.buffer[*track_h][w] = msg[w];
-		}
-		*track_h += 1;
-		*track_w = 0;
+			if (w != 0 && w % terminal.charWidth == 0)
+			{
+				*track_h += 1;
+				straighten_hw(track_h, track_w);
+			}
 
-		for (int w = terminal.charWidth; w < msg.length(); w++)
-		{
-			terminal.buffer[*track_h][w - terminal.charWidth] = msg[w];
+			terminal.buffer[(*track_h*terminal.charWidth)+(w%terminal.charWidth)] = msg[w];
 		}
 
 		*track_w = msg.length() - terminal.charWidth;
 
 	} else {
+
 		for (int w = 0; w < msg.length(); w++)
 		{
-			terminal.buffer[*track_h][w] = msg[w];
+			terminal.buffer[(*track_h*terminal.charWidth)+w] = msg[w];
 		}
 
 		*track_w = msg.length();

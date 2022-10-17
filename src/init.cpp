@@ -152,6 +152,7 @@ void TerminalControl::initiate()
     
     // Initialize Frame Buffer
     display_resize();
+	init_display();
 }
 
 bool TerminalControl::read_config()
@@ -332,10 +333,6 @@ void TerminalControl::terminate()
     }
 
     // Free Buffer Data
-    for (int h = 0; h < this->charHeight; h++)
-    {
-        delete[] this->buffer[h];
-    }
     delete[] this->buffer;
 
     XDestroyWindow(this->display, this->main);

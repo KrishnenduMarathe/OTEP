@@ -1,21 +1,17 @@
 #include "control.h"
 #include <X11/Xlib.h>
 
+// Resize display buffer
 void display_resize()
 {
     TerminalControl& terminal = TerminalControl::getInstance();
 
     // Free Buffer Data
-	char **record;
-	record = new char*[terminal.charHeight];
-	for (int h = 0; h < terminal.charHeight; h++)
+	char *record;
+	record = new char[terminal.charHeight * terminal.charWidth];
+	for (int xy = 0; xy < terminal.charHeight * terminal.charWidth; xy++)
     {
-		record[h] = new char[terminal.charWidth];
-		for (int w = 0; w < terminal.charWidth; w++)
-		{
-			record[h][w] = terminal.buffer[h][w];
-		}
-        delete[] terminal.buffer[h];
+		record[xy] = terminal.buffer[xy];
     }
     delete[] terminal.buffer;
 
@@ -26,42 +22,47 @@ void display_resize()
     terminal.charWidth = static_cast<int>(terminal.width / terminal.c_width);
     terminal.charHeight = static_cast<int>(terminal.height / terminal.c_height);
 
-    // Default Values
-    terminal.buffer = new char*[terminal.charHeight];
-	for (int h = 0; h < terminal.charHeight; h++)
-    {
-        terminal.buffer[h] = new char[terminal.charWidth];
-        for (int w = 0; w < terminal.charWidth; w++)
-        {
-            terminal.buffer[h][w] = ' ';
-        }
-    }
+    // Allocate Buffer
+    terminal.buffer = new char[terminal.charHeight * terminal.charWidth];
 
 	// Restore buffer
 	if (old_x != 0 && old_y != 0)
 	{
-		int h = terminal.charHeight - 1;
-		int hi = old_y - 1;
-		int w = 0;
+		int old_xy = old_x * old_y;
+		int new_xy = terminal.charHeight * terminal.charWidth;
 
-		while (h >= 0)
+		if (old_xy >= new_xy)
 		{
-			terminal.buffer[h][w%terminal.charWidth] = record[hi][w%old_x];
-
-			if (w != 0 && w % terminal.charWidth == 0)
-			{ h--; }
-			if (w != 0 && w % old_x == 0)
-			{ hi--; }
-			w++;
+			for (int xy = new_xy - 1; xy >= 0; xy--)
+			{
+				terminal.buffer[xy] = record[xy];
+			}
+		} else {
+			for (int xy = 0; xy < new_xy; xy++)
+			{
+				if (xy < old_xy)
+				{
+					terminal.buffer[xy] = record[xy];
+				} else {
+					terminal.buffer[xy] = ' ';
+				}
+			}
 		}
 	}
 
-	// Clear record - Segmentation Fault on "delete[] record[h];" quarantined
-	/*for (int h = 0; h < terminal.charHeight; h++)
+	// Clear record
+	delete[] record;
+}
+
+// Fill buffer with blanks
+void init_display()
+{
+	TerminalControl& terminal = TerminalControl::getInstance();
+
+	for (int xy = 0; xy < terminal.charHeight * terminal.charWidth; xy++)
 	{
-		delete[] record[h];
+		terminal.buffer[xy] = ' ';
 	}
-	delete[] record;*/
 }
 
 // Draw Rows of the terminal
@@ -80,9 +81,19 @@ void draw_width(int current_height)
     x = lx;
     y = ly + terminal.c_height;
 
+	// Generate string
+	char *row = new char[terminal.charWidth];
+	for (int w = 0; w < terminal.charWidth; w++)
+	{
+		row[w] = terminal.buffer[(current_height*terminal.charWidth)+w];
+	}
+
     // Draw String
     XSetForeground(terminal.display, terminal.gc, terminal.fg);
-    XDrawString(terminal.display, terminal.main, terminal.gc, x, y, terminal.buffer[current_height], terminal.charWidth);
+    XDrawString(terminal.display, terminal.main, terminal.gc, x, y, row, terminal.charWidth);
+
+	// free generated string
+	delete[] row;
 }
 
 // Draw Function
@@ -115,19 +126,15 @@ void straighten_hw(int* track_h, int* track_w)
 	if (*track_h >= terminal.charHeight - 1)
 	{
 		*track_h -= 1;
-		for (int h = 1; h < terminal.charHeight; h++)
+
+		for (int xy = 0; xy < terminal.charHeight * terminal.charWidth; xy++)
 		{
-			for (int w = 0; w < terminal.charWidth; w++)
+			if (xy < (terminal.charHeight - 1)*terminal.charWidth)
 			{
-				terminal.buffer[h-1][w] = terminal.buffer[h][w];
+				terminal.buffer[xy] = terminal.buffer[xy + terminal.charWidth];
+			} else {
+				terminal.buffer[xy] = ' ';
 			}
-		}
-		for (int h = terminal.charHeight - 1 - 1; h < terminal.charHeight; h++)
-		{
-			for (int w = 0; w < terminal.charWidth; w++)
-			{
-				terminal.buffer[h][w] = ' ';
-			} 
 		}
 	}
 }
