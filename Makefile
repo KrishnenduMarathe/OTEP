@@ -18,17 +18,17 @@ all: build config/icon.png config/otep.conf config/version
 
 # Build Rules
 build: $(OBJECTS)
-	@echo "\n$(CXX) $(OBJECTS) -o $(EXEC) $(CXXFLAGS)"
+	@echo "=> $(CXX) $(OBJECTS) -o $(EXEC) $(CXXFLAGS)"
 	$(shell $(CXX) $(OBJECTS) -o $(EXEC) $(CXXFLAGS))
 
 # Object Rules
 src/%.o: src/%.cpp
-	@echo "$(CXX) -c $^ -o $@"
+	@echo "-> $(CXX) -c $^ -o $@"
 	$(shell $(CXX) -c $^ -o $@)
 
 # Debug Build
 debug: clean
-	@echo "\n$(CXX) -g src/*.cpp -o $(EXEC) $(CXXFLAGS)"
+	@echo "=> $(CXX) -g src/*.cpp -o $(EXEC) $(CXXFLAGS)"
 	$(shell $(CXX) -g src/*.cpp -o $(EXEC) $(CXXFLAGS))
 
 # Install Rules

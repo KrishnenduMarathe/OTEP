@@ -26,8 +26,18 @@ void TerminalControl::initiate()
 	this->prompt.assign(":: " + hostname + " >> ");
 
 	// Get linux PATH environment variable
-	//char* path = std::getenv("PATH");
-	//std::cout << path << std::endl;
+	std::string vars = std::getenv("PATH");
+
+	int start = 0;
+	for (int i = 0; i < vars.length(); i++)
+	{
+		if (i != 0 && vars[i] == ':')
+		{
+			this->path.push_back(vars.substr(start, i - start));
+			start = i+1;
+		}
+	}
+	this->path.push_back(vars.substr(start, vars.length() - start));
 
     // Connect to X Server
     this->display = XOpenDisplay(NULL);

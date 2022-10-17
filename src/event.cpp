@@ -8,7 +8,7 @@ void event_loop()
 
 	// resize control
 	bool resize = false;
-	unsigned int max_count = 10000; // threshold
+	unsigned int max_count = 50; // threshold
 	unsigned int count = 0;
 
 	// Input Pointer Coordinates

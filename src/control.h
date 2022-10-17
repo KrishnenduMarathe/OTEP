@@ -4,9 +4,10 @@
 
 #include <iostream>
 #include <fstream>
-#include <string>
 #include <cstdlib>
+#include <string>
 #include <thread>
+#include <vector>
 
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -59,6 +60,9 @@ public:
 
 	// Exit Marker
     bool exit_loop = false;
+
+	// Path environment paths
+	std::vector<std::string> path;
 
 	// Draw Prompt
 	bool draw_prompt = true;

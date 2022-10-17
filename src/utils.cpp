@@ -94,7 +94,7 @@ void draw()
     XClearWindow(terminal.display, terminal.main);
 
     // Single thread draw
-    for (int h = 0; h < terminal.charHeight; (h++))
+    for (int h = 0; h < terminal.charHeight; h++)
     {
         draw_width(h);
     }
