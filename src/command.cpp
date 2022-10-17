@@ -15,24 +15,81 @@ void process_launch(std::string comm, int* track_h, int* track_w)
 	TerminalControl& terminal = TerminalControl::getInstance();
 
 	// Tokenize input command
-	std::vector<std::string> tokens;
-	int start = 0;
+	int start, end;
+	bool comm_found = false;
+	
 	for (int i = 0; i < comm.length(); i++)
 	{
-		if (i != 0 && comm[i] == ' ')
+		if (!comm_found)
 		{
-			tokens.push_back(comm.substr(start, i - start));
-			start = i+1;
+			if (comm[i] != ' ')
+			{
+				start = i;
+				comm_found = true;
+			}
+		} else {
+			if (comm[i] == ' ' || i == comm.length())
+			{
+				// extract just command
+				end = i;
+				break;
+			}
 		}
 	}
-	tokens.push_back(comm.substr(start, comm.length() - start));
 
-	if (tokens[0] == "exit")
+	if (comm.substr(start, end - start) == "exit")
 	{
 		terminal.exit_loop = true;
 		return;
+	} else if (comm.substr(start, end - start) == "clear")
+	{
+		*track_h = 0;
+		*track_w = 0;
+		init_display();
+		terminal.draw_prompt = true;
+		return;
 	} else {
-		msg.assign("EDoShel: " + tokens[0] + " -> Command not found");
+
+		// Look if command binary available
+		int loc = -1;
+
+		for (int v = 0; v < terminal.path.size(); v++)
+		{
+			std::ifstream bin;
+			bin.open(terminal.path[v]+"/"+comm.substr(start, end - start), std::ios::in);
+			
+			// file exists
+			if (bin) { loc = v; }
+
+			bin.close();
+		}
+
+		if (loc >= 0)
+		{
+			// Execute command
+			char buffer[128];
+			FILE* process = popen((terminal.path[loc]+"/"+comm).c_str(), "r");
+			
+			if (!process)
+			{
+				msg.assign("EDoShell: " + comm.substr(start, end - start) + " Failed to launch command");
+			} else {
+				// Read process output
+				msg.assign("");
+				while (!feof(process))
+				{
+					// read buffer
+					if (fgets(buffer, 128, process) != NULL)
+					{
+						msg += buffer;
+					}
+				}
+			}
+			pclose(process);
+
+		} else {
+			msg.assign("EDoShell: " + comm.substr(start, end - start) + " -> Command not found");
+		}
 	}
 
 	if (*track_w != 0)
@@ -48,22 +105,63 @@ void process_launch(std::string comm, int* track_h, int* track_w)
 			if (w != 0 && w % terminal.charWidth == 0)
 			{
 				*track_h += 1;
+				*track_w = 0;
 				straighten_hw(track_h, track_w);
 			}
 
-			terminal.buffer[(*track_h*terminal.charWidth)+(w%terminal.charWidth)] = msg[w];
-		}
+			// handle escape characters: \n \t
+			if (msg[w] == '\n')
+			{
+				*track_h += 1;
+				*track_w = 0;
+				straighten_hw(track_h, track_w);
+				continue;
+			
+			} else if (msg[w] == '\t')
+			{
+				for (int i = 0; i < 2; i++)
+				{
+					terminal.buffer[(*track_h*terminal.charWidth)+*track_w] = ' ';
+					
+					*track_w += 1;
+					straighten_hw(track_h, track_w);
+					continue;
+				}
+			}
 
-		*track_w = msg.length() - terminal.charWidth;
+			terminal.buffer[(*track_h*terminal.charWidth)+*track_w] = msg[w];
+			*track_w += 1;
+			straighten_hw(track_h, track_w);
+		}
 
 	} else {
 
 		for (int w = 0; w < msg.length(); w++)
 		{
-			terminal.buffer[(*track_h*terminal.charWidth)+w] = msg[w];
-		}
+			// handle escape characters: \n \t
+			if (msg[w] == '\n')
+			{
+				*track_h += 1;
+				*track_w = 0;
+				straighten_hw(track_h, track_w);
+				continue;
+			
+			} else if (msg[w] == '\t')
+			{
+				for (int i = 0; i < 2; i++)
+				{
+					terminal.buffer[(*track_h*terminal.charWidth)+*track_w] = ' ';
+					
+					*track_w += 1;
+					straighten_hw(track_h, track_w);
+					continue;
+				}
+			}
 
-		*track_w = msg.length();
+			terminal.buffer[(*track_h*terminal.charWidth)+*track_w] = msg[w];
+			*track_w += 1;
+			straighten_hw(track_h, track_w);
+		}
 	}
 
 	*track_h += 2;

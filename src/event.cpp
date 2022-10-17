@@ -97,9 +97,10 @@ void event_loop()
             } else
             {
                 char key = terminal.getKeyInChar();
+				
                 if (terminal.advance_debug)
-                { std::cout << "MSG:: Key Pressed >> " << key << std::endl; }
-                        
+                { std::cout << "MSG:: Key Pressed >> " << std::hex << (int) key << " { " << key << " }" << std::endl; }
+
                 // Process Input
 				if (key == '\n')
 				{

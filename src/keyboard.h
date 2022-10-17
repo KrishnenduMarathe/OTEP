@@ -139,6 +139,9 @@ inline char TerminalControl::getKeyInChar()
         case XK_hyphen:
             if (this->kb_triggers.shift) { return '_'; }
             else { return '-'; }
+		case XK_minus:
+			if (this->kb_triggers.shift) { return '_'; }
+            else { return '-'; }
         case XK_0:
             if (this->kb_triggers.shift) { return ')'; }
             else { return '0'; }
