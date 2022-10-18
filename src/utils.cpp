@@ -1,5 +1,14 @@
 #include "control.h"
-#include <X11/Xlib.h>
+
+bool TerminalControl::isNumber(std::string str)
+{
+	for (unsigned int itr = 0; itr < str.length(); itr++)
+    {
+        if (std::isdigit(str[itr]) == 0) { return false; }
+    }
+
+    return true;
+}
 
 // Resize display buffer
 void display_resize()

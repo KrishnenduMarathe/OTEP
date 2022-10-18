@@ -3,21 +3,17 @@
 void process_launch(std::string comm, int* track_h, int* track_w)
 {
 	// Skip if command empty
-	if (comm == "") { return; }
+	if (comm == "") { return;  }
+	TerminalControl& terminal = TerminalControl::getInstance();
 
 	// Maintain history
 	std::ofstream file;
 	file.open(".edo_history.txt", std::ios::app);
-	file << comm << std::endl;
-	file.close();
-
-	std::string msg;
-	TerminalControl& terminal = TerminalControl::getInstance();
 
 	// Tokenize input command
 	int start, end;
 	bool comm_found = false;
-	
+
 	for (int i = 0; i < comm.length(); i++)
 	{
 		if (!comm_found)
@@ -30,13 +26,16 @@ void process_launch(std::string comm, int* track_h, int* track_w)
 		} else {
 			if (comm[i] == ' ' || i == comm.length())
 			{
-				// extract just command
 				end = i;
 				break;
 			}
 		}
 	}
 
+	file << comm.substr(start, comm.length() - start) << std::endl;
+	file.close();
+
+	std::string msg;
 	if (comm.substr(start, end - start) == "exit")
 	{
 		terminal.exit_loop = true;
@@ -49,7 +48,6 @@ void process_launch(std::string comm, int* track_h, int* track_w)
 		terminal.draw_prompt = true;
 		return;
 	} else {
-
 		// Look if command binary available
 		int loc = -1;
 
@@ -57,10 +55,10 @@ void process_launch(std::string comm, int* track_h, int* track_w)
 		{
 			std::ifstream bin;
 			bin.open(terminal.path[v]+"/"+comm.substr(start, end - start), std::ios::in);
-			
-			// file exists
-			if (bin) { loc = v; }
 
+			// file exists
+			if (bin) { loc = v; break; }
+			
 			bin.close();
 		}
 
@@ -68,11 +66,11 @@ void process_launch(std::string comm, int* track_h, int* track_w)
 		{
 			// Execute command
 			char buffer[128];
-			FILE* process = popen((terminal.path[loc]+"/"+comm).c_str(), "r");
-			
+			FILE* process = popen((terminal.path[loc]+"/"+comm.substr(start, comm.length() - start)).c_str(), "r");
+
 			if (!process)
 			{
-				msg.assign("EDoShell: " + comm.substr(start, end - start) + " Failed to launch command");
+				msg.assign("EDoShell: "+comm.substr(start, end - start)+" Failed to launch command");
 			} else {
 				// Read process output
 				msg.assign("");
@@ -86,9 +84,8 @@ void process_launch(std::string comm, int* track_h, int* track_w)
 				}
 			}
 			pclose(process);
-
 		} else {
-			msg.assign("EDoShell: " + comm.substr(start, end - start) + " -> Command not found");
+			msg.assign("EDoShell: "+comm.substr(start, end - start)+" -> Command not found");
 		}
 	}
 
@@ -102,7 +99,7 @@ void process_launch(std::string comm, int* track_h, int* track_w)
 	{
 		for (int w = 0; w < msg.length(); w++)
 		{
-			if (w != 0 && w % terminal.charWidth == 0)
+			if (w != 0 && w%terminal.charWidth == 0)
 			{
 				*track_h += 1;
 				*track_w = 0;
@@ -116,26 +113,23 @@ void process_launch(std::string comm, int* track_h, int* track_w)
 				*track_w = 0;
 				straighten_hw(track_h, track_w);
 				continue;
-			
 			} else if (msg[w] == '\t')
 			{
 				for (int i = 0; i < 2; i++)
 				{
 					terminal.buffer[(*track_h*terminal.charWidth)+*track_w] = ' ';
-					
+
 					*track_w += 1;
 					straighten_hw(track_h, track_w);
-					continue;
 				}
+				continue;
 			}
 
 			terminal.buffer[(*track_h*terminal.charWidth)+*track_w] = msg[w];
 			*track_w += 1;
 			straighten_hw(track_h, track_w);
 		}
-
 	} else {
-
 		for (int w = 0; w < msg.length(); w++)
 		{
 			// handle escape characters: \n \t
@@ -145,17 +139,16 @@ void process_launch(std::string comm, int* track_h, int* track_w)
 				*track_w = 0;
 				straighten_hw(track_h, track_w);
 				continue;
-			
 			} else if (msg[w] == '\t')
 			{
 				for (int i = 0; i < 2; i++)
 				{
 					terminal.buffer[(*track_h*terminal.charWidth)+*track_w] = ' ';
-					
+
 					*track_w += 1;
 					straighten_hw(track_h, track_w);
-					continue;
 				}
+				continue;
 			}
 
 			terminal.buffer[(*track_h*terminal.charWidth)+*track_w] = msg[w];
@@ -163,9 +156,8 @@ void process_launch(std::string comm, int* track_h, int* track_w)
 			straighten_hw(track_h, track_w);
 		}
 	}
-
+	
 	*track_h += 2;
 	*track_w = 0;
-
 	straighten_hw(track_h, track_w);
 }

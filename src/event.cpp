@@ -189,9 +189,7 @@ void event_loop()
 			msg.assign("H: " + std::to_string(track_h) + " | W: " + std::to_string(track_w));
 			std::cout << msg;
 			for (int i = 0; i < msg.length(); i++)
-			{
-				std::cout << "\b";
-			}
+			{ std::cout << "\b"; }
 		}
     }
 

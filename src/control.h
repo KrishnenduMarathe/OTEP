@@ -10,10 +10,6 @@
 #include <thread>
 #include <vector>
 
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/types.h>
-
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
@@ -30,15 +26,9 @@ private:
     TerminalControl() {}
 
     /* PRIVATE METHOD DECLARATIONS */
-    bool isNumber(std::string str)
-    {
-        for (unsigned int itr = 0; itr < str.length(); itr++)
-        {
-            if (std::isdigit(str[itr]) == 0) { return false; }
-        }
-
-        return true;
-    }
+    
+	// utils.cpp
+	bool isNumber(std::string);
 
 public:
     // Determine Successful Initialization
@@ -62,7 +52,7 @@ public:
 	// Exit Marker
     bool exit_loop = false;
 
-	// Path environment paths
+	// Path environment variable
 	std::vector<std::string> path;
 
 	// Draw Prompt
@@ -90,7 +80,7 @@ public:
     XEvent event;
 
     // Character Dimension
-    uint8_t c_height, c_width;
+    int c_height, c_width;
 
     // Terminal Dimension in Characters
     int charWidth = 0, charHeight = 0;

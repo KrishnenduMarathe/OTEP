@@ -38,3 +38,4 @@ After using "make install", on some systems the application launcher show immedi
 	2. Large Commands don't work. Incorrect & Incomplete tokenization
 	3. Number Keys on numpad might not work on some machine. (I got no clue how to fix)
 	4. Cannot change directory as "cd" not implemented
+	5. Backspace won't work after more that size limit (tied to issue 2 maybe)

@@ -14,7 +14,7 @@ PATH=$(shell pwd)
 # Project Objects
 OBJECTS=src/command.o src/event.o src/init.o src/main.o src/utils.o
 
-all: build config/icon.png config/otep.conf config/version
+all: build
 
 # Build Rules
 build: $(OBJECTS)
