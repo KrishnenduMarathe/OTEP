@@ -137,7 +137,8 @@ void event_loop()
 					}
 				} else
 				{
-					if (key == '\0') { key = ' '; }
+					// Not Implemented Keys ignored
+					if (key == '\0') { continue; }
 
 					terminal.buffer[(track_h*terminal.charWidth)+track_w] = key;
 					track_w++;
