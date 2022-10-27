@@ -157,7 +157,7 @@ void TerminalControl::initiate()
 
 bool TerminalControl::read_config()
 {
-    int8_t cnt = 0;
+    int cnt = 0;
 
     std::ifstream file;
     std::string line;
@@ -182,7 +182,7 @@ bool TerminalControl::read_config()
 
         var.assign(""); val.assign("");
 
-        for (uint8_t itr = 0; itr < line.length(); itr++)
+        for (unsigned int itr = 0; itr < line.length(); itr++)
         {
             if (line[itr] == '\n' || line[itr] == '\t') { break; }
 

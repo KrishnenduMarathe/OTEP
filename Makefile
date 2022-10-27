@@ -35,7 +35,8 @@ debug: clean
 .PHONY: install
 install: build
 	@echo "[Desktop Entry]\nEncoding=UTF-8\nPath=$(PATH)\nVersion=\`cat '$(PATH)/config/version'\`\nType=Application\nTerminal=false\nExec='$(PATH)/$(EXEC)'\nName=OTEP\nComment=Ouroboros Terminal Emulation Program\nCategory=Utility;\nIcon=$(PATH)/config/icon.png" > ~/.local/share/applications/otep.desktop
-	@echo "\nDesktop Entry created for the current user"
+	@echo " "
+	@echo "Desktop Entry created for the current user"
 
 # Uninstall Rules
 .PHONY: uninstall
