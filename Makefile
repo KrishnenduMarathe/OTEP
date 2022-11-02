@@ -11,6 +11,8 @@ else
 endif
 
 PATH=$(shell pwd)
+VERSION=$(shell cat $(PATH)/config/version)
+
 # Project Objects
 OBJECTS=src/command.o src/event.o src/init.o src/main.o src/utils.o
 
@@ -34,7 +36,18 @@ debug: clean
 # Install Rules
 .PHONY: install
 install: build
-	@echo "[Desktop Entry]\nEncoding=UTF-8\nPath=$(PATH)\nVersion=\`cat '$(PATH)/config/version'\`\nType=Application\nTerminal=false\nExec='$(PATH)/$(EXEC)'\nName=OTEP\nComment=Ouroboros Terminal Emulation Program\nCategory=Utility;\nIcon=$(PATH)/config/icon.png" > ~/.local/share/applications/otep.desktop
+	@echo "[Desktop Entry]" > ~/.local/share/applications/otep.desktop
+	@echo "Encoding=UTF-8" >> ~/.local/share/applications/otep.desktop
+	@echo "Path=$(PATH)" >> ~/.local/share/applications/otep.desktop
+	@echo "Version=$(VERSION)" >> ~/.local/share/applications/otep.desktop
+	@echo "Type=Application" >> ~/.local/share/applications/otep.desktop
+	@echo "Terminal=false" >> ~/.local/share/applications/otep.desktop
+	@echo "Exec='$(PATH)/$(EXEC)'" >> ~/.local/share/applications/otep.desktop
+	@echo "Name=OTEP" >> ~/.local/share/applications/otep.desktop
+	@echo "Comment=Ouroboros Terminal Emulation Program" >> ~/.local/share/applications/otep.desktop
+	@echo "Category=System;TerminalEmulator;" >> ~/.local/share/applications/otep.desktop
+	@echo "Icon=$(PATH)/config/icon.png" >> ~/.local/share/applications/otep.desktop
+	
 	@echo " "
 	@echo "Desktop Entry created for the current user"
 
